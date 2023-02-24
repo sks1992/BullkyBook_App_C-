@@ -1,7 +1,7 @@
-﻿using BullkyBookWeb.Models;
+﻿using BullkyBook.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BullkyBookWeb.Data
+namespace BullkyBook.DataAccess
 {
     public class ApplicationDbContext :DbContext
     {
