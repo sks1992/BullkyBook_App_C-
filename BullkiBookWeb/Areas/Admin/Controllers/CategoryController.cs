@@ -1,19 +1,21 @@
-﻿using BullkyBook.DataAccess;
+﻿using BullkyBook.DataAccess.Repository.IRepository;
 using BullkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BullkyBookWeb.Controllers
+namespace BullkyBookWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
-        public CategoryController(ApplicationDbContext db)
+        //private readonly ApplicationDbContext _db;
+        private readonly IUnitOfWork _unitOfWork;
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-                _db= db;
+            _unitOfWork = unitOfWork;
         }
         public IActionResult Index()
         {
-            IEnumerable<Category> objCategoryList = _db.Category;
+            IEnumerable<Category> objCategoryList = _unitOfWork.Category.GetAll();
             return View(objCategoryList);
         }
         //Get
@@ -25,37 +27,39 @@ namespace BullkyBookWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Category category)
         {
-            if(category.Name == category.DisplayOrder.ToString()) {
+            if (category.Name == category.DisplayOrder.ToString())
+            {
                 ModelState.AddModelError("CustomError", "The Display Order cannot exactly match the Name.");
             }
             if (ModelState.IsValid)
             {
-                _db.Category.Add(category);
-                _db.SaveChanges();
-                TempData["success"]="Category Created Successfully";
+                _unitOfWork.Category.Add(category);
+                _unitOfWork.Save();
+                TempData["success"] = "Category Created Successfully";
                 return RedirectToAction("Index");
             }
             return View(category);
         }
 
         //Get
-        public IActionResult Edit(int? id)  
+        public IActionResult Edit(int? id)
         {
-            if(id == null) {
+            if (id == null)
+            {
                 return NotFound();
             }
-            var  categoryFromDb = _db.Category.Find(id);
-            //var categoryFromDbFirst = _db.Category.FirstOrDefault(x => x.Id == id);
+            //var  categoryFromDb = _db.Category.Find(id);
+            var categoryFromDbFirst = _unitOfWork.Category.GetFirstOrDefault(x => x.Id == id);
             //var categoryFromDbSingle = _db.Category.SingleOrDefault(x => x.Id == id);
 
-            if(categoryFromDb == null)
+            if (categoryFromDbFirst == null)
             {
 
                 return NotFound();
             }
-            return View(categoryFromDb);
+            return View(categoryFromDbFirst);
         }
-        [HttpPost]  
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Category category)
         {
@@ -65,8 +69,8 @@ namespace BullkyBookWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                _db.Category.Update(category);
-                _db.SaveChanges();
+                _unitOfWork.Category.Update(category);
+                _unitOfWork.Save();
                 TempData["success"] = "Category Edited Successfully";
                 return RedirectToAction("Index");
             }
@@ -80,31 +84,30 @@ namespace BullkyBookWeb.Controllers
             {
                 return NotFound();
             }
-            var categoryFromDb = _db.Category.Find(id);
-            //var categoryFromDbFirst = _db.Category.FirstOrDefault(x => x.Id == id);
+            //var categoryFromDb = _db.Category.Find(id);
+            var categoryFromDbFirst = _unitOfWork.Category.GetFirstOrDefault(x => x.Id == id);
             //var categoryFromDbSingle = _db.Category.SingleOrDefault(x => x.Id == id);
 
-            if (categoryFromDb == null)
+            if (categoryFromDbFirst == null)
             {
 
                 return NotFound();
             }
-            return View(categoryFromDb);
+            return View(categoryFromDbFirst);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeletePOST(int? id)
         {
-            var category = _db.Category.Find(id);
+            var category = _unitOfWork.Category.GetFirstOrDefault(x => x.Id == id);
             if (category == null)
             {
                 return NotFound();
             }
-           _db.Category.Remove(category);
-            _db.SaveChanges();
+            _unitOfWork.Category.Remove(category);
+            _unitOfWork.Save();
             TempData["success"] = "Category Removed Successfully";
             return RedirectToAction("Index");
-        }   
+        }
     }
 }
-        
