@@ -12,5 +12,6 @@ namespace BullkyBook.DataAccess
 
         public DbSet<Category> Category { get; set; }
         public DbSet<CoverType> CoverTypes { get; set; }
+        public DbSet<Product> Products { get; set; }
     }
 }
